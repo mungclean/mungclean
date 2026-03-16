@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-top">
           <div className="footer-links">
-            <Link href="/terms">관리자</Link>
+            <Link href="/admin">admin</Link>
             <Link href="/terms">이용약관</Link>
             <Link href="/privacy">개인정보처리방침</Link>
           </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { createConsultation } from "@/app/actions";
 
 export default function EstimatePage() {
   const [formData, setFormData] = useState({
@@ -38,10 +39,17 @@ export default function EstimatePage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("견적 문의가 접수되었습니다. 명확한 확인을 위해 곧 담당자가 연락드리겠습니다!");
-    console.log(formData);
+    try {
+      await createConsultation(formData);
+      alert("견적 문의가 접수되었습니다. 명확한 확인을 위해 곧 담당자가 연락드리겠습니다!");
+      // Optionally reload or reset form
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      alert("문의 접수 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    }
   };
 
   const fadeInUp = {
