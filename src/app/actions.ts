@@ -28,8 +28,8 @@ export async function createConsultation(data: any) {
       const transporter = nodemailer.createTransport({
         service: "naver",
         host: "smtp.naver.com",
-        port: 465,
-        secure: true,
+        port: 587,
+        secure: false, // TLS
         auth: {
           user: process.env.NAVER_EMAIL_ID, // 예: your_id
           pass: process.env.NAVER_EMAIL_PASSWORD, // 비밀번호
