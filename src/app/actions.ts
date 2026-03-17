@@ -23,7 +23,7 @@ export async function createConsultation(data: any) {
   });
 
   // 2. 이메일 알림 전송 (환경 변수가 설정된 경우에만)
-  if (process.env.NAVER_USER && process.env.NAVER_PASS) {
+  if (process.env.NAVER_EMAIL_ID && process.env.NAVER_EMAIL_PASSWORD) {
     try {
       const transporter = nodemailer.createTransport({
         service: "naver",
@@ -31,16 +31,26 @@ export async function createConsultation(data: any) {
         port: 465,
         secure: true,
         auth: {
-          user: process.env.NAVER_USER, // 예: your_id@naver.com
-          pass: process.env.NAVER_PASS, // 예: 네이버 2단계 인증 애플리케이션 비밀번호
+          user: process.env.NAVER_EMAIL_ID, // 예: your_id
+          pass: process.env.NAVER_EMAIL_PASSWORD, // 비밀번호
         },
       });
 
       const mailOptions = {
-        from: process.env.NAVER_USER,
-        to: process.env.NAVER_USER, // 알림을 받을 이메일 (자신에게 보내기)
-        subject: `[멍크린 문의 알림] ${data.name}님의 새로운 견적 문의가 접수되었습니다.`,
-        text: `새로운 상담 문의가 도착했습니다.\n\n[고객 정보]\n이름: ${data.name}\n연락처: ${data.phone}\n\n[상세 내용]\n${details}\n\n관리자 페이지에서 확인해주세요.`,
+        from: `"${process.env.NAVER_EMAIL_ID}@naver.com"`,
+        to: `${process.env.NAVER_EMAIL_ID}@naver.com`, // 알림을 받을 이메일 (자신에게 보내기)
+        subject: "[새로운 문의 알림] 고객 문의가 접수되었습니다.",
+        html: `
+          <h2>새로운 고객 문의가 접수되었습니다.</h2>
+          <ul>
+            <li><strong>고객명:</strong> ${data.name}</li>
+            <li><strong>연락처:</strong> ${data.phone}</li>
+            <li><strong>문의내용:</strong><br />
+              <pre style="font-family: inherit; margin-top: 8px; white-space: pre-wrap;">${details}</pre>
+            </li>
+          </ul>
+          <p>관리자 페이지에서 확인해주세요.</p>
+        `,
       };
 
       await transporter.sendMail(mailOptions);
