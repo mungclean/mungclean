@@ -10,9 +10,27 @@ export default async function AdminPage() {
     return <AdminLogin />;
   }
 
-  const consultations = await prisma.consultation.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  let consultations: any[] = [];
+  let fetchError = null;
+
+  try {
+    consultations = await prisma.consultation.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error: any) {
+    console.error("Admin Page Prisma Error:", error);
+    fetchError = error.message || String(error);
+  }
+
+  if (fetchError) {
+    return (
+      <div className="admin-container">
+        <h1>서버 오류가 발생했습니다.</h1>
+        <p style={{ color: "red" }}>{fetchError}</p>
+        <p>데이터베이스 연결 또는 스키마 설정을 확인해주세요.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-container">
@@ -46,12 +64,12 @@ export default async function AdminPage() {
                 <td className="details-col">{item.details || "-"}</td>
                 <td>
                   <span
-                    className={`status-badge ${item.status.toLowerCase()}`}
+                    className={`status-badge ${(item.status || "PENDING").toLowerCase()}`}
                   >
-                    {item.status === "PENDING" ? "대기중" : item.status === "COMPLETED" ? "완료" : item.status}
+                    {item.status === "PENDING" ? "대기중" : item.status === "COMPLETED" ? "완료" : (item.status || "대기중")}
                   </span>
                 </td>
-                <td>{item.createdAt.toLocaleDateString("ko-KR")}</td>
+                <td>{item.createdAt ? new Date(item.createdAt).toLocaleDateString("ko-KR") : "-"}</td>
               </tr>
             ))
           )}
