@@ -20,10 +20,10 @@ export default function Footer() {
 
         <div className="footer-info">
           <p>
-            본사주소: 경기도 안양시 만안구 장내로 143번길 15 &nbsp; | &nbsp; 전화: 1661-0959 &nbsp; | &nbsp; 이메일: 3800sv@naver.com
+            본사주소: 인천광역시 중구 하늘달빛로64번길6-3, 302호(중산동, 스카이 메디컬프라자) &nbsp; | &nbsp; 전화: 1661-0959 &nbsp; | &nbsp; 이메일: 3800sv@naver.com
           </p>
           <p>
-            대표: 김동환 &nbsp; | &nbsp; 사업자등록번호: 770-25-02153
+            대표: 김동환 &nbsp; | &nbsp; 사업자등록번호: 341-28-01786
           </p>
           <p className="copyright">Copyright © 멍크린 all rights reserved.</p>
         </div>
