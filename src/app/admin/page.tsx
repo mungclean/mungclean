@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import AdminLogin from "./AdminLogin";
+import ConsultationTable from "./ConsultationTable";
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
@@ -35,53 +36,9 @@ export default async function AdminPage() {
   return (
     <div className="admin-container">
       <h1>관리자 페이지 - 상담 문의 목록</h1>
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>이름</th>
-            <th>연락처</th>
-            <th>문의 종류</th>
-            <th>상세 내용</th>
-            <th>상태</th>
-            <th>문의일시</th>
-          </tr>
-        </thead>
-        <tbody>
-          {consultations.length === 0 ? (
-            <tr>
-              <td colSpan={7} className="text-center py-4">
-                문의 내역이 없습니다.
-              </td>
-            </tr>
-          ) : (
-            consultations.map((item) => (
-              <tr key={item.id}>
-                <td>{item.id}</td>
-                <td>{item.name}</td>
-                <td>{item.phone}</td>
-                <td>{item.type || "-"}</td>
-                <td className="details-col">{item.details || "-"}</td>
-                <td>
-                  <span
-                    className={`status-badge ${(item.status || "PENDING").toLowerCase()}`}
-                  >
-                    {item.status === "PENDING" ? "대기중" : item.status === "COMPLETED" ? "완료" : (item.status || "대기중")}
-                  </span>
-                </td>
-                <td>{item.createdAt ? new Date(item.createdAt).toLocaleDateString("ko-KR") : "-"}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      
+      <ConsultationTable initialData={JSON.parse(JSON.stringify(consultations))} />
 
-      {/* Styled-JSX is typically deprecated in App Router if not client component, 
-          but we are using plain CSS or globals.css. 
-          Actually, since App Router doesn't support styled-jsx in server components without "use client", 
-          we should use inline styles or standard CSS. Let's make it plain client component for styled-jsx,
-          or just use a basic css file or tailwind. Wait, Next.js supports a separate CSS module.
-      */}
       <style>{`
         .admin-container {
           max-width: 1200px;

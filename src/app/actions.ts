@@ -37,7 +37,7 @@ export async function createConsultation(data: any) {
       });
 
       const mailOptions = {
-        from: `"${process.env.NAVER_EMAIL_ID}@naver.com"`,
+        from: `${process.env.NAVER_EMAIL_ID}@naver.com`,
         to: `${process.env.NAVER_EMAIL_ID}@naver.com`, // 알림을 받을 이메일 (자신에게 보내기)
         subject: "[새로운 문의 알림] 고객 문의가 접수되었습니다.",
         html: `
@@ -58,6 +58,8 @@ export async function createConsultation(data: any) {
       console.error("이메일 발송 실패:", error);
       // 이메일 발송이 실패하더라도 DB 저장은 유지합니다.
     }
+  } else {
+    console.warn("이메일 알림 전송 실패: 네이버 이메일 환경 변수가 설정되지 않았습니다.");
   }
 
   return consultation;
@@ -70,4 +72,37 @@ export async function loginAdmin(password: string) {
     return true;
   }
   return false;
+}
+
+export async function updateConsultationStatus(id: number, status: string) {
+  try {
+    const cookieStore = await cookies();
+    const isAdmin = cookieStore.get("admin_auth")?.value === "true";
+    if (!isAdmin) throw new Error("Unauthorized");
+
+    const updated = await prisma.consultation.update({
+      where: { id },
+      data: { status },
+    });
+    return { success: true, data: updated };
+  } catch (error: any) {
+    console.error("Update Status Error:", error);
+    return { success: false, error: error.message || String(error) };
+  }
+}
+
+export async function deleteConsultation(id: number) {
+  try {
+    const cookieStore = await cookies();
+    const isAdmin = cookieStore.get("admin_auth")?.value === "true";
+    if (!isAdmin) throw new Error("Unauthorized");
+
+    await prisma.consultation.delete({
+      where: { id },
+    });
+    return { success: true };
+  } catch (error: any) {
+    console.error("Delete Consultation Error:", error);
+    return { success: false, error: error.message || String(error) };
+  }
 }

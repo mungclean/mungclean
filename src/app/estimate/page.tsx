@@ -22,6 +22,8 @@ export default function EstimatePage() {
     catCount: "",
     notes: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const handleCheckboxChange = (category: keyof typeof formData, value: string) => {
     setFormData(prev => {
@@ -41,14 +43,17 @@ export default function EstimatePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await createConsultation(formData);
-      alert("견적 문의가 접수되었습니다. 명확한 확인을 위해 곧 담당자가 연락드리겠습니다!");
-      // Optionally reload or reset form
-      window.location.reload();
+      setShowToast(true);
     } catch (error) {
       console.error(error);
       alert("문의 접수 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -233,8 +238,8 @@ export default function EstimatePage() {
               <label htmlFor="privacy">개인정보 수집 및 이용 방침에 동의합니다.</label>
             </div>
 
-            <button type="submit" className="submit-btn">
-              견적 문의 신청하기 <Send size={18} />
+            <button type="submit" className={`submit-btn ${isSubmitting ? 'submitting' : ''}`} disabled={isSubmitting}>
+              {isSubmitting ? '접수 중...' : '견적 문의 신청하기'} <Send size={18} />
             </button>
           </form>
         </motion.div>
@@ -578,10 +583,16 @@ export default function EstimatePage() {
           box-shadow: 0 10px 20px rgba(0, 174, 239, 0.2);
           transition: all 0.3s ease;
         }
-        .submit-btn:hover {
+        .submit-btn:hover:not(:disabled) {
           transform: translateY(-3px);
           box-shadow: 0 15px 30px rgba(0, 174, 239, 0.3);
           background: #0095cc;
+        }
+        .submit-btn:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          background-color: #cbd5e1;
+          box-shadow: none;
         }
         .pet-count-row {
           display: flex;
@@ -631,7 +642,110 @@ export default function EstimatePage() {
             padding: 20px 15px;
           }
         }
+
+        /* Toast Styles */
+        .toast-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 99999;
+          padding: 20px;
+        }
+        .toast-container {
+          background-color: #ffffff !important;
+          padding: 60px 80px;
+          border-radius: 30px;
+          box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+          border: 1px solid #e2e8f0;
+          min-width: 500px;
+          max-width: 90%;
+          text-align: center;
+          position: relative;
+          opacity: 1 !important;
+        }
+        .toast-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 20px;
+        }
+        .toast-icon {
+          color: #10b981;
+          transform: scale(1.5);
+        }
+        .toast-content p {
+          margin: 0;
+          font-weight: 800;
+          color: #1e293b;
+          line-height: 1.5;
+          font-size: 1.4rem;
+          text-align: center;
+          word-break: keep-all;
+          margin-bottom: 30px;
+        }
+        .toast-confirm-btn {
+          background-color: var(--primary);
+          color: white;
+          border: none;
+          padding: 14px 40px;
+          border-radius: 12px;
+          font-size: 1.1rem;
+          font-weight: 800;
+          cursor: pointer;
+          transition: all 0.2s;
+          width: 100%;
+          max-width: 160px;
+          box-shadow: 0 4px 12px rgba(0, 174, 239, 0.3);
+        }
+        .toast-confirm-btn:hover {
+          transform: translateY(-2px);
+          background-color: #0095cc;
+          box-shadow: 0 6px 16px rgba(0, 174, 239, 0.4);
+        }
+        @media (max-width: 768px) {
+          .toast-container {
+            width: 85%;
+            min-width: auto;
+            padding: 30px 20px;
+          }
+          .toast-content p {
+            font-size: 1.1rem;
+          }
+        }
       `}</style>
+
+      {showToast && (
+        <div className="toast-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 100000 }}>
+          <motion.div
+            className="toast-container"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={{ 
+              backgroundColor: '#ffffff', 
+              opacity: 1, 
+              padding: '60px 80px', 
+              borderRadius: '40px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              boxShadow: '0 40px 120px rgba(0,0,0,0.6)'
+            }}
+          >
+            <div className="toast-content">
+              <CheckCircle2 size={40} className="toast-icon" />
+              <p>문의가 접수되었습니다.<br />담당자가 곧 안내 연락드리겠습니다!</p>
+              <button className="toast-confirm-btn" onClick={() => window.location.reload()}>확인</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
     </div>
   );
 }
