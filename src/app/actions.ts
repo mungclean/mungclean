@@ -22,13 +22,16 @@ export async function createConsultation(data: any) {
     },
   });
 
-  // 2. 이메일 알림 전송 (환경 변수가 설정된 경우에만)
+  // 2. 이메일 알림 전송 결과 추적
+  let emailStatus = { success: false, error: null as string | null };
+
   if (process.env.NAVER_EMAIL_ID && process.env.NAVER_EMAIL_PASSWORD) {
     try {
+      console.log("이메일 발송 시도 중...");
       const transporter = nodemailer.createTransport({
         host: "smtp.naver.com",
         port: 465,
-        secure: true, // SSL
+        secure: true,
         auth: {
           user: process.env.NAVER_EMAIL_ID,
           pass: process.env.NAVER_EMAIL_PASSWORD,
@@ -40,31 +43,47 @@ export async function createConsultation(data: any) {
 
       const mailOptions = {
         from: `${process.env.NAVER_EMAIL_ID}@naver.com`,
-        to: `${process.env.NAVER_EMAIL_ID}@naver.com`, // 알림을 받을 이메일 (자신에게 보내기)
+        to: `${process.env.NAVER_EMAIL_ID}@naver.com`, // 자신에게 보내기
         subject: "[새로운 문의 알림] 고객 문의가 접수되었습니다.",
         html: `
-          <h2>새로운 고객 문의가 접수되었습니다.</h2>
-          <ul>
-            <li><strong>고객명:</strong> ${data.name}</li>
-            <li><strong>연락처:</strong> ${data.phone}</li>
-            <li><strong>문의내용:</strong><br />
-              <pre style="font-family: inherit; margin-top: 8px; white-space: pre-wrap;">${details}</pre>
-            </li>
-          </ul>
-          <p>관리자 페이지에서 확인해주세요.</p>
+          <div style="font-family: sans-serif; padding: 20px; color: #333; line-height: 1.6;">
+            <h2 style="color: #00aeef; border-bottom: 2px solid #00aeef; padding-bottom: 10px;">신규 견적 문의 접수</h2>
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+              <p><strong>고객명:</strong> ${data.name}</p>
+              <p><strong>연락처:</strong> ${data.phone}</p>
+              <p><strong>접수 시간:</strong> ${new Date().toLocaleString("ko-KR")}</p>
+              <div style="margin-top: 20px; padding: 15px; background: white; border: 1px solid #eee; border-radius: 4px;">
+                <strong>문의 상세 내용:</strong><br />
+                <pre style="white-space: pre-wrap; margin-top: 10px;">${details}</pre>
+              </div>
+            </div>
+            <p style="margin-top: 30px; text-align: center;">
+              <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}/admin" 
+                 style="background-color: #00aeef; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                 관리자 페이지에서 확인하기
+              </a>
+            </p>
+          </div>
         `,
       };
 
-      await transporter.sendMail(mailOptions);
-    } catch (error) {
-      console.error("이메일 발송 실패:", error);
-      // 이메일 발송이 실패하더라도 DB 저장은 유지합니다.
+      const info = await transporter.sendMail(mailOptions);
+      console.log("이메일 발송 성공:", info.messageId);
+      emailStatus.success = true;
+    } catch (error: any) {
+      console.error("이메일 발송 상세 에러:", error);
+      emailStatus.error = error.message || String(error);
     }
   } else {
-    console.warn("이메일 알림 전송 실패: 네이버 이메일 환경 변수가 설정되지 않았습니다.");
+    console.warn("이메일 알림 실패: 서버 환경 변수(NAVER_EMAIL_ID / PASSWORD)가 설정되어 있지 않습니다.");
+    emailStatus.error = "Environment variables missing";
   }
 
-  return consultation;
+  // Next.js serialization을 위해 Date 객체 등을 문자열로 변환한 객체 반환
+  return JSON.parse(JSON.stringify({ 
+    ...consultation, 
+    emailStatus 
+  }));
 }
 
 export async function loginAdmin(password: string) {

@@ -47,7 +47,14 @@ export default function EstimatePage() {
 
     setIsSubmitting(true);
     try {
-      await createConsultation(formData);
+      const result = await createConsultation(formData);
+      
+      if (!result.emailStatus.success) {
+        // 이메일 발송만 실패한 경우
+        console.error("Email send failed:", result.emailStatus.error);
+        alert(`문의는 DB에 정상 접수되었으나, 네이버 메일 발송에 실패했습니다.\n사유: ${result.emailStatus.error}\n\n관리자 페이지에서는 확인이 가능합니다.`);
+      }
+      
       setShowToast(true);
     } catch (error) {
       console.error(error);
