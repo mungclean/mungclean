@@ -26,14 +26,16 @@ export async function createConsultation(data: any) {
   if (process.env.NAVER_EMAIL_ID && process.env.NAVER_EMAIL_PASSWORD) {
     try {
       const transporter = nodemailer.createTransport({
-        service: "naver",
         host: "smtp.naver.com",
         port: 465,
         secure: true, // SSL
         auth: {
-          user: process.env.NAVER_EMAIL_ID, // 예: your_id
-          pass: process.env.NAVER_EMAIL_PASSWORD, // 앱 비밀번호 (애플리케이션 비밀번호)
+          user: process.env.NAVER_EMAIL_ID,
+          pass: process.env.NAVER_EMAIL_PASSWORD,
         },
+        tls: {
+          rejectUnauthorized: false
+        }
       });
 
       const mailOptions = {
