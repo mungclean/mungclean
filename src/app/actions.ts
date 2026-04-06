@@ -33,7 +33,7 @@ export async function createConsultation(data: any) {
         port: 587,
         secure: false, // STARTTLS
         auth: {
-          user: process.env.NAVER_EMAIL_ID,
+          user: `${process.env.NAVER_EMAIL_ID}@naver.com`, // 전체 이메일 주소 사용
           pass: process.env.NAVER_EMAIL_PASSWORD,
         },
         tls: {
