@@ -30,14 +30,15 @@ export async function createConsultation(data: any) {
       console.log("이메일 발송 시도 중...");
       const transporter = nodemailer.createTransport({
         host: "smtp.naver.com",
-        port: 465,
-        secure: true,
+        port: 587,
+        secure: false, // STARTTLS
         auth: {
           user: process.env.NAVER_EMAIL_ID,
           pass: process.env.NAVER_EMAIL_PASSWORD,
         },
         tls: {
-          rejectUnauthorized: false
+          rejectUnauthorized: false,
+          ciphers: 'SSLv3'
         }
       });
 
